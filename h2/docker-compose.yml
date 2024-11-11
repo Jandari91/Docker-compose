@@ -1,0 +1,13 @@
+version: "3"
+services:
+  h2-db:
+    image: oscarfonts/h2:latest
+    container_name: h2-db
+    ports:
+      - "9021:1521"   # H2 TCP 포트
+      - "9081:81"   # H2 웹 콘솔 포트
+    environment:
+      H2_OPTIONS: "-tcp -tcpAllowOthers -ifNotExists"
+    volumes:
+      - ./h2-data:/opt/h2-data  # 데이터 저장 경로
+    restart: always
