@@ -1,0 +1,29 @@
+name: Gatsby Build & Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # ✅ Gitea Runner에서 실행됨
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Build Gatsby
+        run: |
+          WORKDIR=$(pwd)  # Gitea Runner 컨테이너 내부 경로 가져오기
+          docker run --rm \
+            -v "$WORKDIR/gitbook:/workspace" \
+            -v "$WORKDIR/public:/public" \
+            gatsby-builder:latest \
+            sh -c "cd /workspace && npm install && gatsby build && cp -r /workspace/public/* /public/"
+
+      # - name: Build Gatsby
+      #   run: |
+      #     docker run --rm \
+      #       -v "/home/bak/Workspace/gatsby2/gitbook:/workspace" \
+      #       -v "/home/bak/Workspace/Docker-compose/gittea-gatsby/public:/public" \
+      #       gatsby-builder:latest \
+      #       sh -c "cd /workspace && npm install && gatsby build && cp -r /workspace/public/* /public/"
