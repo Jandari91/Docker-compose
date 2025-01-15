@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__DOMAIN=192.168.55.205
+      - GITEA__server__ROOT_URL=http://192.168.55.205:3000/
+      - GITEA__server__SSH_DOMAIN=192.168.55.205
+      - GITEA__server__HTTP_PORT=3000
+    volumes:
+      - ./gitea/data:/data
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    networks:
+      - crossbook-net
+
+  gitea-runner:
+    image: gitea/act_runner:latest
+    container_name: gitea-runner
+    restart: always
+    depends_on:
+      - gitea
+    environment:
+      - GITEA_INSTANCE_URL=http://192.168.55.205:3000 
+      - GITEA_RUNNER_REGISTRATION_TOKEN=BHjrfDB2O6rI8AVKu2ogl5eqmtn9NKs5AB6ol2ou
+    volumes:
+      - ./runner/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock 
+    networks:
+      - crossbook-net
+
+  # gatsby-builder:
+  #   image: node:18
+  #   container_name: gatsby-builder
+  #   restart: always
+  #   depends_on:
+  #     - gitea-runner
+  #   working_dir: /workspace
+  #   volumes:
+  #     - ./gatsby:/workspace
+  #     - ./public:/public
+  #   command: ["sh", "-c", "npm install -g gatsby-cli"]
+  #   networks:
+  #     - crossbook-net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - crossbook-net
+
+networks:
+  crossbook-net:
+    driver: bridge
